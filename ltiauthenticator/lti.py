@@ -103,10 +103,10 @@ class LTIAuthenticator(OAuthenticator):
             print('%s' % p)
         print('\nFinished printing body.split\n')
 
-        # Skip authentication for now...
-        x = [True]
-        # x = signature_authenticate.validate_request('%s://%s%s' % (request.protocol, request.host, request.uri),
-        #                                             request.method, request.body.decode('utf-8'), request.headers)
+        # Since we're behind a proxy we need to hardcode the URL here for the signature
+        # Assume that it's in the format https://assessment_name.domain/hub/login
+        url = 'https://%s.%s/hub/login' % (os.environ['ASSESSMENT_NAME'], os.environ['DOMAIN'])
+        x = signature_authenticate.validate_request(url, request.method, request.body.decode('utf-8'), request.headers)
         print("Authenticated? %s\n\n" % str(x[0]))
 
         if x[0]:
