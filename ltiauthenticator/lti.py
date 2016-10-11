@@ -50,10 +50,15 @@ class LTILoginHandler(BaseHandler):
             # username = self._map_username(username, assessment)
             user = self.user_from_username(username)
             # Hardcode these courses for now.
-            os.makedirs('/home/%s/intro')
-            os.makedirs('/home/%s/management')
-            os.makedirs('/home/%s/stats')
-            os.makedirs('/home/%s/visualisation')
+            if not os.path.exists('/home/%s/intro' % username):
+                os.makedirs('/home/%s/intro' % username)
+            if not os.path.exists('/home/%s/management' % username):
+                os.makedirs('/home/%s/management' % username)
+            if not os.path.exists('/home/%s/stats' % username):
+                os.makedirs('/home/%s/stats' % username)
+            if not os.path.exists('/home/%s/visualisation' % username):
+                os.makedirs('/home/%s/visualisation' % username)
+
 
             self.set_login_cookie(user)
             self.redirect(url_path_join(self.hub.server.base_url, 'home'))
