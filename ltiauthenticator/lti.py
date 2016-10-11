@@ -55,7 +55,6 @@ class LTILoginHandler(BaseHandler):
             os.makedirs('/home/%s/stats')
             os.makedirs('/home/%s/visualisation')
 
-            user.spawner.host_homedir = '/home/{username}/%s' % os.environ.get('ASSESSMENT_NAME', 'intro')
             self.set_login_cookie(user)
             self.redirect(url_path_join(self.hub.server.base_url, 'home'))
         else:
