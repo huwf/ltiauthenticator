@@ -115,12 +115,9 @@ class LTIAuthenticator(OAuthenticator):
         x = signature_authenticate.validate_request(url, request.method, request.body.decode('utf-8'), request.headers)
         print("Authenticated? %s\n\n" % str(x[0]))
 
-        # if x[0]:
-            # return handler.get_argument("user_id")
-        db = LtiDB('sqlite:///user_session.db')
-        username = db.get_user(handler.get_argument("user_id"))
-
-        return 'instructor'
+        if x[0]:
+            db = LtiDB('sqlite:///user_session.db')
+            return db.get_user(handler.get_argument("user_id"))
 
         return None
 
