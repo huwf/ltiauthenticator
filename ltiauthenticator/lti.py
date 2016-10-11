@@ -49,7 +49,13 @@ class LTILoginHandler(BaseHandler):
 
             # username = self._map_username(username, assessment)
             user = self.user_from_username(username)
+            # Hardcode these courses for now.
+            os.makedirs('/home/%s/intro')
+            os.makedirs('/home/%s/management')
+            os.makedirs('/home/%s/stats')
+            os.makedirs('/home/%s/visualisation')
 
+            user.spawner.host_homedir = '/home/{username}/%s' % os.environ.get('ASSESSMENT_NAME', 'intro')
             self.set_login_cookie(user)
             self.redirect(url_path_join(self.hub.server.base_url, 'home'))
         else:
@@ -105,16 +111,16 @@ class LTIAuthenticator(OAuthenticator):
 
         # Since we're behind a proxy we need to hardcode the URL here for the signature
         # Assume that it's in the format https://assessment_name.domain/hub/login
-        url = 'https://%s.%s/hub/login' % (os.environ['ASSESSMENT_NAME'], os.environ['DOMAIN'])
+        url = 'https://%s.%s/hub/login' % (os.environ.get('ASSESSMENT_NAME', 'intro'), os.environ.get('DOMAIN', ''))
         x = signature_authenticate.validate_request(url, request.method, request.body.decode('utf-8'), request.headers)
         print("Authenticated? %s\n\n" % str(x[0]))
 
-        if x[0]:
+        # if x[0]:
             # return handler.get_argument("user_id")
-            db = LtiDB('sqlite:///user_session.db')
-            username = db.get_user(handler.get_argument("user_id"))
+        db = LtiDB('sqlite:///user_session.db')
+        username = db.get_user(handler.get_argument("user_id"))
 
-            return 'instructor'
+        return 'instructor'
 
         return None
 
