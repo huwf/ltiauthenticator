@@ -9,6 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.sql import and_
 from sqlalchemy import select, func, exists, case, literal_column
 from traitlets.config import LoggingConfigurable
+import os
 
 # Things for the timestamp and nonce validation
 Base = declarative_base()
@@ -111,7 +112,7 @@ class LtiDB(LoggingConfigurable):
             return user_obj.unix_name
         except NoResultFound:
             total_users = len(self.db.query(LtiUser).all())
-            new_unix_name = 'user-%d' % (total_users + 1)
+            new_unix_name = 'user-%d-%s' % ((total_users + 1),os.environ['ASSESSMENT_NAME'])
             print('Adding new user %s' % new_unix_name)
             self.add_user(user_id, new_unix_name)
             return new_unix_name
