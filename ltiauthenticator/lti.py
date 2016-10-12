@@ -50,8 +50,8 @@ class LTILoginHandler(BaseHandler):
             # username = self._map_username(username, assessment)
             user = self.user_from_username(username)
             # Hardcode these courses for now.
-            if not os.path.exists('/home/%s/intro' % username):
-                os.makedirs('/home/%s/intro' % username)
+            if not os.path.exists('/home/%s/introduction' % username):
+                os.makedirs('/home/%s/introduction' % username)
             if not os.path.exists('/home/%s/management' % username):
                 os.makedirs('/home/%s/management' % username)
             if not os.path.exists('/home/%s/stats' % username):
