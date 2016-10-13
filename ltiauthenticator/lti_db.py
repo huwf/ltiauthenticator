@@ -38,8 +38,8 @@ class LtiUserSession(Base):
 
 
     def __repr__(self):
-        return 'TimestampNonce(<id: %d username: %s timestamp: %d nonce: %s>)' \
-               % (self.id, self.username, self.timestamp, self.nonce)
+        return 'LtiUserSession(<key: %s, user_id %s, lis_result: %s, lis_outcome: %s resource_link_id: %s>)' \
+            % (self.key, self.user_id, self.lis_result_sourcedid, self.lis_outcome_service_url, self.resource_link_id)
 
 
 class LtiDB(LoggingConfigurable):
@@ -73,9 +73,10 @@ class LtiDB(LoggingConfigurable):
         :return:
         """
 
-        user_session = self.get_user_session(key, user_id)
+        user_session = self.get_user_session(user_id)
         if not user_session:
-            self.db.add(LtiUserSession(user_id=user_id,
+            self.db.add(LtiUserSession(key=key,
+                                       user_id=user_id,
                                        lis_result_sourcedid=lis_result_sourcedid,
                                        lis_outcome_service_url=lis_outcome_service_url,
                                        resource_link_id=resource_link_id))
@@ -90,13 +91,20 @@ class LtiDB(LoggingConfigurable):
             raise ValueError(*e.args)
         return user_session
 
-    def get_user_session(self, key, user_id):
+    def get_user_session(self, user_id):
         user_session = \
-            self.db.query(LtiUserSession).filter(LtiUserSession.key == key, LtiUserSession.user_id == user_id).all()
+            self.db.query(LtiUserSession).filter(LtiUserSession.user_id == user_id).all()
         if len(user_session) > 0:
             return user_session[0]
         else:
             return None
+
+    def get_user_by_unix_name(self, unix_name):
+        try:
+            return self.db.query(LtiUser).filter(LtiUser.unix_name == unix_name).one()
+        except:
+            self.log.error('No user by the UNIX name %s' % unix_name)
+
 
     def get_user(self, user_id):
         """

@@ -36,9 +36,9 @@ class LTILoginHandler(BaseHandler):
         username = yield self.authenticator.get_authenticated_user(self, None)
 
         if username:
-
             db = LtiDB('sqlite:///user_session.db')
             params = self._get_lti_params()
+            print('params', str(params))
             db.add_or_update_user_session(
                 key=params['oauth_consumer_key'],
                 user_id=params['user_id'],
