@@ -36,15 +36,12 @@ class LtiUserSession(Base):
     lis_outcome_service_url = Column(String)
     resource_link_id = Column(String)
 
-
-
     def __repr__(self):
-        return 'LtiUserSession(<key: %s, user_id %s, lis_result: %s, lis_outcome: %s resource_link_id: %s>)' \
+        return 'LtiUserSession(<key: %s, user_id %s, lis_result_sourcedid: %s, lis_outcome: %s resource_link_id: %s>)' \
             % (self.key, self.user_id, self.lis_result_sourcedid, self.lis_outcome_service_url, self.resource_link_id)
 
 
 class LtiDB(LoggingConfigurable):
-
 
     def __init__(self, db_url):
         """Initialize the connection to the database.
@@ -58,7 +55,6 @@ class LtiDB(LoggingConfigurable):
         # create the connection to the database
         engine = create_engine(db_url, echo=True)
         self.db = scoped_session(sessionmaker(autoflush=True, bind=engine))
-
 
         # this creates all the tables in the database if they don't already exist
         Base.metadata.create_all(bind=engine)
@@ -120,13 +116,15 @@ class LtiDB(LoggingConfigurable):
             return user_obj.unix_name
         except NoResultFound:
             total_users = len(self.db.query(LtiUser).all())
-            new_unix_name = 'user-%d-%s' % ((total_users + 1),os.environ['ASSESSMENT_NAME'])
+            new_unix_name = 'user-%d-%s' % ((total_users + 1), os.environ['ASSESSMENT_NAME'])
             print('Adding new user %s' % new_unix_name)
             self.add_user(user_id, new_unix_name)
             return new_unix_name
 
     def add_user(self, user_id, username):
         self.db.add(LtiUser(user_id=user_id, unix_name=username))
+        with open('/home/instructor/data_science', 'a') as f:
+            f.write('\n%s' % username)
         try:
             self.db.commit()
             self.log.info('Added new user %s to the database' % username)
