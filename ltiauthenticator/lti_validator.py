@@ -1,5 +1,6 @@
 from oauthlib.oauth1 import RequestValidator
 from .authenticator_db import NoncesDB
+import os
 
 class LTIValidator(RequestValidator):
     # Temporary values for dev:
@@ -26,6 +27,12 @@ class LTIValidator(RequestValidator):
 
     def validate_timestamp_and_nonce(self, client_key, timestamp, nonce,
                                      request, request_token=None, access_token=None):
+        # unpw = ''
+        # with open('/srv/jupyterhub/mysql') as f:
+        #     unpw = f.read().strip()
+        #
+        # connection_string = 'mysql+mysqlconnector://%s@%s/lti' % (unpw, os.environ['MYSQL_HOST'])
+        # db = NoncesDB(connection_string)
         db = NoncesDB('sqlite:///timestamp.db')
 
         valid_nonce = db.check_valid_timestamp_and_nonce(timestamp, nonce)

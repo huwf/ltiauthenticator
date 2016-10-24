@@ -110,6 +110,13 @@ class LTIAuthenticator(OAuthenticator):
         print("Authenticated? %s\n\n" % str(x[0]))
 
         if x[0]:
+            # unpw = ''
+            # with open('/srv/jupyterhub/mysql') as f:
+            #     unpw = f.read().strip()
+            #
+            # connection_string = 'mysql+mysqlconnector://%s@%s/lti' % (unpw, os.environ['MYSQL_HOST'])
+
+            # db = LtiDB(connection_string)
             db = LtiDB('sqlite:///user_session.db')
             role = handler.get_argument('roles')
             if 'INSTRUCTOR' in role.upper():
