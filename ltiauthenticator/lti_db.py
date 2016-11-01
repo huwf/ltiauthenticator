@@ -116,14 +116,14 @@ class LtiDB(LoggingConfigurable):
             return user_obj.unix_name
         except NoResultFound:
             total_users = len(self.db.query(LtiUser).all())
-            new_unix_name = 'user-%d-%s' % ((total_users + 1), os.environ['ASSESSMENT_NAME'])
+            new_unix_name = 'user-%d' % ((total_users + 1))
             print('Adding new user %s' % new_unix_name)
             self.add_user(user_id, new_unix_name)
             return new_unix_name
 
     def add_user(self, user_id, username):
         self.db.add(LtiUser(user_id=user_id, unix_name=username))
-        with open('/home/instructor/data_science', 'a') as f:
+        with open('/home/instructor/data_science/students.txt', 'a') as f:
             f.write('\n%s' % username)
         try:
             self.db.commit()
