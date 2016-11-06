@@ -41,6 +41,14 @@ class LtiUserSession(Base):
             % (self.key, self.user_id, self.lis_result_sourcedid, self.lis_outcome_service_url, self.resource_link_id)
 
 
+class LtiKeySecret(Base):
+    key_secret_id = Column(Integer, primary_key=True, autoincrement=True)
+    key = Column(String)
+    secret = Column(String)
+
+    def __repr__(self):
+        return '<KeySecret object %d>' % self.key_secret_id
+
 class LtiDB(LoggingConfigurable):
 
     def __init__(self, db_url):
@@ -58,6 +66,16 @@ class LtiDB(LoggingConfigurable):
 
         # this creates all the tables in the database if they don't already exist
         Base.metadata.create_all(bind=engine)
+
+    def get_key_secret(self):
+        """
+        Gets the key and secret from the database.
+        Assumes that there is only one, which exists.
+        If it does not exist an exception is raised
+        :return: 
+        """
+        key_secret = self.db.query(LtiKeySecret).one()
+        return {'get_key': key_secret['key'], key_secret['key']: key_secret['secret']}
 
 
     def add_or_update_user_session(self, key, user_id, lis_result_sourcedid, lis_outcome_service_url, resource_link_id):

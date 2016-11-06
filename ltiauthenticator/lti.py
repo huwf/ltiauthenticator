@@ -23,6 +23,9 @@ import os
 import pwd, grp
 import json
 
+connection_string = os.environ.get('LTI_DB', 'sqlite:///lti.db')
+
+
 class LTIMixin(OAuthMixin):
     _OAUTH_VERSION = '1.0a'
 
@@ -31,12 +34,12 @@ class LTILoginHandler(BaseHandler):
     assessments_whitelist = ['stats', 'management', 'visualisation', 'introduction', 'data_science']
 
     @gen.coroutine
-    def post(self):
+    def post(self, *args, **kwargs):
         # TODO: Check if state argument needs to be checked
         username = yield self.authenticator.get_authenticated_user(self, None)
 
         if username:
-            db = LtiDB('sqlite:///user_session.db')
+            db = LtiDB(connection_string)
             params = self._get_lti_params()
             print('params', str(params))
             db.add_or_update_user_session(
@@ -55,6 +58,17 @@ class LTILoginHandler(BaseHandler):
         else:
             # todo: custom error page?
             raise web.HTTPError(403)
+
+    def get(self, *args, **kwargs):
+        """
+        If anyone who is not logged in reaches the server with a GET request, they have almost certainly been logged out
+        The login handler requires POST as per the LTI standard
+        :param args:
+        :param kwargs:
+        :return:
+        """
+        return '<h1>Logged Out</h1><p>You have been logged out, although your server may remain running for a few ' \
+               'minutes. If you wish to log in again, you will have to do so through the Canvas "Assignments"</p>'
 
 
     def _get_lti_params(self):
@@ -80,7 +94,6 @@ class LTILoginHandler(BaseHandler):
             else:
                 self.log.warning('Arg %s does not exist' % lti)
         return params
-
 
 
 
@@ -117,16 +130,13 @@ class LTIAuthenticator(OAuthenticator):
             # connection_string = 'mysql+mysqlconnector://%s@%s/lti' % (unpw, os.environ['MYSQL_HOST'])
 
             # db = LtiDB(connection_string)
-            db = LtiDB('sqlite:///user_session.db')
+            db = LtiDB(connection_string)
             role = handler.get_argument('roles')
             if 'INSTRUCTOR' in role.upper():
                 return 'instructor'
             return db.get_user(handler.get_argument("user_id"))
 
         return None
-
-
-
 
     def get_handlers(self, app):
         return [

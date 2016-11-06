@@ -1,6 +1,9 @@
 from oauthlib.oauth1 import RequestValidator
 from .authenticator_db import NoncesDB
+from .lti_db import LtiDB
 import os
+
+connection_string = os.environ.get('LTI_DB', 'sqlite:///lti.db')
 
 class LTIValidator(RequestValidator):
     # Temporary values for dev:
@@ -18,6 +21,10 @@ class LTIValidator(RequestValidator):
     @property
     def nonce_length(self):
         return 20, 64
+
+    @property
+    def authentication_information(self):
+        db = LtiDB(connection_string)
 
     def get_client_secret(self, client_key, request):
         return self.authentication_information[client_key]
