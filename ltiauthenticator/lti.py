@@ -23,7 +23,7 @@ import os
 import pwd, grp
 import json
 
-connection_string = os.environ.get('LTI_DB', 'sqlite:///lti.db')
+connection_string = os.environ.get('LTI_DB', 'sqlite:////srv/jupyterhub/lti.db')
 
 
 class LTIMixin(OAuthMixin):
@@ -67,8 +67,9 @@ class LTILoginHandler(BaseHandler):
         :param kwargs:
         :return:
         """
-        return '<h1>Logged Out</h1><p>You have been logged out, although your server may remain running for a few ' \
-               'minutes. If you wish to log in again, you will have to do so through the Canvas "Assignments"</p>'
+        self.write('<h1>Logged Out</h1>'
+                   '<p>You have been logged out, although your server may remain running for a few minutes. If you '
+                   'wish to log in again, you will have to do so through the Canvas "Assignments page"</p>')
 
 
     def _get_lti_params(self):

@@ -45,7 +45,7 @@ class LtiKeySecret(Base):
     __tablename__ = 'keysecret'
 
     key_secret_id = Column(Integer, primary_key=True, autoincrement=True)
-    key = Column(String)
+    key_value = Column(String)
     secret = Column(String)
 
     def __repr__(self):
@@ -74,11 +74,26 @@ class LtiDB(LoggingConfigurable):
         Gets the key and secret from the database.
         Assumes that there is only one, which exists.
         If it does not exist an exception is raised
-        :return: 
+        :return:
         """
-        key_secret = self.db.query(LtiKeySecret).one()
-        return {'get_key': key_secret['key'], key_secret['key']: key_secret['secret']}
+        try:
+            key_secret = self.db.query(LtiKeySecret).one()
+            return_value = {'get_key': key_secret.key_value, key_secret.key_value: key_secret.secret}
+            print(str(return_value))
+            return return_value
 
+        except:
+            self.log.warn('There is no key/secret pair in the database.  Returning None')
+            return None
+
+
+    def add_key_secret(self, key, secret):
+        if not(self.get_key_secret()):
+            self.db.add(LtiKeySecret(key_value=key, secret=secret))
+            self.db.commit()
+            self.log.info('New key/secret added to the database')
+        else:
+            self.log.warn('IGNORED attempt to add a new key/secret when one already exists')
 
     def add_or_update_user_session(self, key, user_id, lis_result_sourcedid, lis_outcome_service_url, resource_link_id):
         """

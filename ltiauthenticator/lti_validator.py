@@ -3,16 +3,10 @@ from .authenticator_db import NoncesDB
 from .lti_db import LtiDB
 import os
 
-connection_string = os.environ.get('LTI_DB', 'sqlite:///lti.db')
+connection_string = os.environ.get('LTI_DB', 'sqlite:////srv/jupyterhub/lti.db')
 
 class LTIValidator(RequestValidator):
-    # Temporary values for dev:
-    authentication_information = {
-        # To map key to secret
-        'bf53908be86be8211dd15a2b836fa4e5': '01763eb976c96fa0e97b97013f5dc5e8',
-        # To get client key
-        'get_key': 'bf53908be86be8211dd15a2b836fa4e5'
-    }
+
 
     @property
     def client_key_length(self):
@@ -25,6 +19,8 @@ class LTIValidator(RequestValidator):
     @property
     def authentication_information(self):
         db = LtiDB(connection_string)
+        print('In the authentication_information property method')
+        return db.get_key_secret()
 
     def get_client_secret(self, client_key, request):
         return self.authentication_information[client_key]
