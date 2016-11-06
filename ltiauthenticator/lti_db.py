@@ -42,6 +42,8 @@ class LtiUserSession(Base):
 
 
 class LtiKeySecret(Base):
+    __tablename__ = 'keysecret'
+
     key_secret_id = Column(Integer, primary_key=True, autoincrement=True)
     key = Column(String)
     secret = Column(String)
