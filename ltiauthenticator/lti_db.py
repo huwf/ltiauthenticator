@@ -137,7 +137,6 @@ class LtiDB(LoggingConfigurable):
         except:
             self.log.error('No user by the UNIX name %s' % unix_name)
 
-
     def get_user(self, user_id, firstname='', surname=''):
 
         """
@@ -156,7 +155,7 @@ class LtiDB(LoggingConfigurable):
             total_users = len(self.db.query(LtiUser).all())
             new_unix_name = 'user-%d' % ((total_users + 1))
             print('Adding new user %s' % new_unix_name)
-            self.add_user(user_id, new_unix_name)
+            self.add_user(user_id, new_unix_name, firstname, surname)
             return new_unix_name
 
     def add_user(self, user_id, username, firstname, surname):
