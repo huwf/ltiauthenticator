@@ -135,7 +135,9 @@ class LTIAuthenticator(OAuthenticator):
             role = handler.get_argument('roles')
             if 'INSTRUCTOR' in role.upper():
                 return 'instructor'
-            return db.get_user(handler.get_argument("user_id"))
+            firstname = handler.get_argument('lis_person_name_given')
+            surname = handler.get_argument('lis_person_name_family')
+            return db.get_user(handler.get_argument("user_id"), firstname=firstname, surname=surname)
 
         return None
 

@@ -138,9 +138,12 @@ class LtiDB(LoggingConfigurable):
             self.log.error('No user by the UNIX name %s' % unix_name)
 
 
-    def get_user(self, user_id):
+    def get_user(self, user_id, firstname='', surname=''):
+
         """
         When a user logs in, we check to see if they exist.  If they do not, create them
+        The firstname and surname are optional.  If they are there and we are creating a
+        user, put them into the CSV file.
         :param user_id: The User ID sent across from Canvas.
         :return: A unix username
         """
@@ -156,10 +159,10 @@ class LtiDB(LoggingConfigurable):
             self.add_user(user_id, new_unix_name)
             return new_unix_name
 
-    def add_user(self, user_id, username):
+    def add_user(self, user_id, username, firstname, surname):
         self.db.add(LtiUser(user_id=user_id, unix_name=username))
-        with open('/srv/nbgrader/students.txt', 'a') as f:
-            f.write('\n%s' % username)
+        with open('/home/instructor/students.csv', 'a') as f:
+            f.write('%s,%s,%s\n' % (username, firstname, surname))
         try:
             self.db.commit()
             self.log.info('Added new user %s to the database' % username)
