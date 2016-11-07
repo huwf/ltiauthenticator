@@ -158,7 +158,7 @@ class LtiDB(LoggingConfigurable):
 
     def add_user(self, user_id, username):
         self.db.add(LtiUser(user_id=user_id, unix_name=username))
-        with open('/home/instructor/data_science/students.txt', 'a') as f:
+        with open('/srv/nbgrader/students.txt', 'a') as f:
             f.write('\n%s' % username)
         try:
             self.db.commit()
