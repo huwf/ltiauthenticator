@@ -133,8 +133,10 @@ class LTIAuthenticator(OAuthenticator):
             # db = LtiDB(connection_string)
             db = LtiDB(connection_string)
             role = handler.get_argument('roles')
-            # if 'INSTRUCTOR' in role.upper():
-            #     return 'instructor'
+            # TAs and instructors can get the instructor account if they choose the Admin app
+            allow_admin = 'TeachingAssistant'.upper() in role.upper() or 'Instructor'.upper() in role.upper()
+            if allow_admin and handler.get_argument('custom_admin', ''):
+                return 'instructor'
             firstname = handler.get_argument('lis_person_name_given', '')
             surname = handler.get_argument('lis_person_name_family', '')
             return db.get_user(handler.get_argument("user_id"), firstname=firstname, surname=surname)
