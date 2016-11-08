@@ -160,7 +160,7 @@ class LtiDB(LoggingConfigurable):
 
     def add_user(self, user_id, username, firstname, surname):
         self.db.add(LtiUser(user_id=user_id, unix_name=username))
-        with open('/home/instructor/data_science/students.csv', 'a') as f:
+        with open('/home/instructor/students.csv', 'a') as f:
             print("About to write: %s,%s,%s" % (username, firstname, surname))
             f.write('%s,%s,%s\n' % (username, firstname, surname))
         try:
