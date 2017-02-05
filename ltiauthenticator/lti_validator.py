@@ -18,16 +18,13 @@ class LTIValidator(RequestValidator):
 
     @property
     def authentication_information(self):
-        # db = LtiDB(connection_string)
-        # print('In the authentication_information property method')
-        # return db.get_key_secret()
-        with open('/srv/jupyterhub/LTI_KEY') as f:
-            with open('/srv/jupyterhub/LTI_SECRET') as f2:
-                key = f.read().strip()
-                secret = f2.read().strip()
-                lti_db = LtiDB(connection_string)
-                lti_db.add_key_secret(key, secret)
-                return {'get_key': key, key: secret}
+        key = os.environ.get('LTI_KEY', '')
+        print('The key is %s' % key)
+        secret = os.environ.get('LTI_SECRET', '')
+        print('The secret is %s' % secret)
+        lti_db = LtiDB(connection_string)
+        lti_db.add_key_secret(key, secret)
+        return {'get_key': key, key: secret}
 
     def get_client_secret(self, client_key, request):
         return self.authentication_information[client_key]

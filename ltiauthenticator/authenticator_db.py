@@ -24,17 +24,13 @@ class TimestampNonce(Base):
         return 'TimestampNonce(<id: %d username: %s timestamp: %d nonce: %s>)' \
                % (self.id, self.username, self.timestamp, self.nonce)
 
+
 class NoncesDB(object):
 
-
     def __init__(self, db_url):
-        """Initialize the connection to the database.
-
-        Parameters
-        ----------
-        db_url : string
-            The URL to the database, e.g. ``sqlite:///nonces.db``
-
+        """
+        Initialize the connection to the database.
+        :param db_url:The URL to the database, e.g. ``sqlite:///nonces.db``
         """
         # create the connection to the database
         engine = create_engine(db_url, echo=True)

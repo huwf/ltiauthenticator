@@ -10,6 +10,7 @@ from sqlalchemy.sql import and_
 from sqlalchemy import select, func, exists, case, literal_column
 from traitlets.config import LoggingConfigurable
 import os
+from nbgrader import api
 
 # Things for the timestamp and nonce validation
 Base = declarative_base()
@@ -100,7 +101,7 @@ class LtiDB(LoggingConfigurable):
         We assume that for each application we have a single secret.  We need to identify the users
         based on their ID and key, so we can return the correct assignment
         If the user session does not exist, add it.  If the user session does exist, update it
-        :param params: A dict of the parameters passed by the LTI Consumere
+        :param params: A dict of the parameters passed by the LTI Consumer
 
         :return:
         """
@@ -137,14 +138,14 @@ class LtiDB(LoggingConfigurable):
         except:
             self.log.error('No user by the UNIX name %s' % unix_name)
 
-    def get_user(self, user_id, firstname='', surname=''):
+    def get_user(self, user_id):
 
         """
         When a user logs in, we check to see if they exist.  If they do not, create them
         The firstname and surname are optional.  If they are there and we are creating a
         user, put them into the CSV file.
         :param user_id: The User ID sent across from Canvas.
-        :return: A unix username
+        :return: A unix username, or None if they do not exist
         """
         try:
             user_obj = self.db.query(LtiUser).filter(LtiUser.user_id == user_id).one()
@@ -152,13 +153,21 @@ class LtiDB(LoggingConfigurable):
             print('User already exists, getting user %s' % user_obj.unix_name)
             return user_obj.unix_name
         except NoResultFound:
-            total_users = len(self.db.query(LtiUser).all())
-            new_unix_name = 'user-%d' % ((total_users + 1))
-            print('Adding new user %s' % new_unix_name)
-            self.add_user(user_id, new_unix_name, firstname, surname)
-            return new_unix_name
+            return None
 
-    def add_user(self, user_id, username, firstname, surname):
+    def add_user(self, user_id, firstname='', surname=''):
+        """
+        Creates a new user map between the Canvas ID and unix name, adding to
+        :param user_id: The User ID sent from Canvas
+        :param firstname: The first name sent from Canvas
+        :param surname: The surname sent from Canvas
+        :return: The unix name of the new user
+        """
+        total_users = len(self.db.query(LtiUser).all())
+        username = 'user-%d' % (total_users + 1)
+        print('Adding new user %s' % username)
+        self.add_user(user_id, username, firstname, surname)
+
         self.db.add(LtiUser(user_id=user_id, unix_name=username))
         with open('/home/instructor/students.csv', 'a') as f:
             print("About to write: %s,%s,%s" % (username, firstname, surname))
@@ -169,3 +178,16 @@ class LtiDB(LoggingConfigurable):
         except (IntegrityError, FlushError) as e:
             self.db.rollback()
             raise ValueError(*e.args)
+
+    def add_to_nbgrader(self, unix_name, firstname, surname, email):
+        """
+        This function adds the user authenticated by LTI and adds to the student database
+        :param unix_name: The new student's unix name
+        :param firstname: The new student's first name
+        :param surname: The new student's surname
+        :param email: The new student's email address (if applicable)
+        :return:
+        """
+        gb = api.Gradebook(os.environ['GRADEBOOK_DB'])
+        return gb.add_student(unix_name, first_name=firstname, last_name=surname, email=email)
+

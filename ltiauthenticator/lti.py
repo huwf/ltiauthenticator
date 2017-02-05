@@ -124,13 +124,6 @@ class LTIAuthenticator(OAuthenticator):
         print("Authenticated? %s\n\n" % str(x[0]))
 
         if x[0]:
-            # unpw = ''
-            # with open('/srv/jupyterhub/mysql') as f:
-            #     unpw = f.read().strip()
-            #
-            # connection_string = 'mysql+mysqlconnector://%s@%s/lti' % (unpw, os.environ['MYSQL_HOST'])
-
-            # db = LtiDB(connection_string)
             db = LtiDB(connection_string)
             role = handler.get_argument('roles')
             # TAs and instructors can get the instructor account if they choose the Admin app
@@ -139,7 +132,10 @@ class LTIAuthenticator(OAuthenticator):
                 return 'instructor'
             firstname = handler.get_argument('lis_person_name_given', '')
             surname = handler.get_argument('lis_person_name_family', '')
-            return db.get_user(handler.get_argument("user_id"), firstname=firstname, surname=surname)
+            user = db.get_user(handler.get_argument("user_id"), firstname=firstname, surname=surname)
+            if not user:
+                db.add_user()
+            return user
 
         return None
 
