@@ -41,7 +41,7 @@ class LTILoginHandler(BaseHandler):
         if username:
             db = LtiDB(connection_string)
             params = self._get_lti_params()
-            print('params', str(params))
+            self.log.debug('params', str(params))
             db.add_or_update_user_session(
                 key=params['oauth_consumer_key'],
                 user_id=params['user_id'],
@@ -91,7 +91,7 @@ class LTILoginHandler(BaseHandler):
             arg = self.get_argument(lti, False, True)
             if arg:
                 params[lti] = arg
-                print('Arg %s: %s' % (lti, arg))
+                self.log.debug('Arg %s: %s' % (lti, arg))
             else:
                 self.log.warning('Arg %s does not exist' % lti)
         return params
@@ -103,26 +103,26 @@ class LTIAuthenticator(OAuthenticator):
 
     @gen.coroutine
     def authenticate(self, handler, data=None):
-        print("calling authenticate!\n")
+        self.log.debug("calling authenticate!\n")
         validator = LTIValidator()
         signature_authenticate = SignatureOnlyEndpoint(validator)
 
         request = handler.request
 
-        print('%s://%s%s\n' % (request.protocol, request.host, request.uri))
-        print('%s\n\n' % str(dict(request.headers)))
-        # print('%s\n\n' % request.body.decode('utf-8'))
+        self.log.debug('%s://%s%s\n' % (request.protocol, request.host, request.uri))
+        self.log.debug('%s\n\n' % str(dict(request.headers)))
+        # self.log.debug('%s\n\n' % request.body.decode('utf-8'))
         body = request.body.decode('utf-8')
         for p in body.split('&'):
-            print('%s' % p)
-        print('\nFinished printing body.split\n')
+            self.log.debug('%s' % p)
+        self.log.debug('\nFinished self.log.debuging body.split\n')
 
         # Since we're behind a proxy we need to hardcode the URL here for the signature
         # Assume that it's in the format https://assessment_name.domain/hub/login
         url = '%s://%s/hub/login' % (request.protocol, os.environ.get('DOMAIN', ''))
         self.log.info('url: %s' % url)
         x = signature_authenticate.validate_request(url, request.method, request.body.decode('utf-8'), request.headers)
-        print("Authenticated? %s\n\n" % str(x[0]))
+        self.log.debug("Authenticated? %s\n\n" % str(x[0]))
 
         if x[0]:
             db = LtiDB(connection_string)
