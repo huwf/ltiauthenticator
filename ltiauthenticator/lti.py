@@ -23,7 +23,7 @@ import os
 import pwd, grp
 import json
 
-connection_string = os.environ.get('LTI_DB', 'sqlite:////srv/jupyterhub/lti.db')
+connection_string = os.environ.get('LTI_DB', 'sqlite:///lti.db')
 
 
 class LTIMixin(OAuthMixin):
@@ -120,6 +120,7 @@ class LTIAuthenticator(OAuthenticator):
         # Since we're behind a proxy we need to hardcode the URL here for the signature
         # Assume that it's in the format https://assessment_name.domain/hub/login
         url = '%s://%s/hub/login' % (request.protocol, os.environ.get('DOMAIN', ''))
+        self.log.info('url: %s' % url)
         x = signature_authenticate.validate_request(url, request.method, request.body.decode('utf-8'), request.headers)
         print("Authenticated? %s\n\n" % str(x[0]))
 
@@ -132,9 +133,9 @@ class LTIAuthenticator(OAuthenticator):
                 return 'instructor'
             firstname = handler.get_argument('lis_person_name_given', '')
             surname = handler.get_argument('lis_person_name_family', '')
-            user = db.get_user(handler.get_argument("user_id"), firstname=firstname, surname=surname)
+            user = db.get_user(handler.get_argument("user_id"))
             if not user:
-                db.add_user()
+                db.add_user(handler.get_argument('user_id'))
             return user
 
         return None

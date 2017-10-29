@@ -166,12 +166,12 @@ class LtiDB(LoggingConfigurable):
         total_users = len(self.db.query(LtiUser).all())
         username = 'user-%d' % (total_users + 1)
         print('Adding new user %s' % username)
-        self.add_user(user_id, username, firstname, surname)
+        # self.add_user(user_id, username, firstname, surname)
 
         self.db.add(LtiUser(user_id=user_id, unix_name=username))
-        with open('/home/instructor/students.csv', 'a') as f:
-            print("About to write: %s,%s,%s" % (username, firstname, surname))
-            f.write('%s,%s,%s\n' % (username, firstname, surname))
+        # with open('/home/instructor/students.csv', 'a') as f:
+        #     print("About to write: %s,%s,%s" % (username, firstname, surname))
+        #     f.write('%s,%s,%s\n' % (username, firstname, surname))
         try:
             self.db.commit()
             self.log.info('Added new user %s to the database' % username)

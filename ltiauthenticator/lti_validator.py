@@ -3,7 +3,7 @@ from .authenticator_db import NoncesDB
 from .lti_db import LtiDB
 import os
 
-connection_string = os.environ.get('LTI_DB', 'sqlite:////srv/jupyterhub/lti.db')
+connection_string = os.environ.get('LTI_DB', 'sqlite:///lti.db')
 
 class LTIValidator(RequestValidator):
 
