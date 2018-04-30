@@ -17,6 +17,10 @@ class LTIValidator(RequestValidator):
         return 20, 64
 
     @property
+    def enforce_ssl(self):
+        return False
+
+    @property
     def authentication_information(self):
         key = os.environ.get('LTI_KEY', '')
         print('The key is %s' % key)
