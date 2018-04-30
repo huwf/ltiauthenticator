@@ -118,8 +118,7 @@ class LTIAuthenticator(OAuthenticator):
         self.log.debug('\nFinished self.log.debuging body.split\n')
 
         # Since we're behind a proxy we need to hardcode the URL here for the signature
-        # Assume that it's in the format https://assessment_name.domain/hub/login
-        url = 'https://%s/hub/login' % (os.environ.get('DOMAIN', ''))
+        url = '%s://%s/hub/login' % (os.environ.get('PROTO', 'http'), os.environ.get('DOMAIN', 'localhost'))
         self.log.info('url: %s' % url)
         x = signature_authenticate.validate_request(url, request.method, request.body.decode('utf-8'), request.headers)
         self.log.debug("Authenticated? %s\n\n" % str(x[0]))
