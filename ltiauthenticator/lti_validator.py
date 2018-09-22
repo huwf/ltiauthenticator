@@ -23,9 +23,7 @@ class LTIValidator(RequestValidator):
     @property
     def authentication_information(self):
         key = os.environ.get('LTI_KEY', '')
-        print('The key is %s' % key)
         secret = os.environ.get('LTI_SECRET', '')
-        print('The secret is %s' % secret)
         lti_db = LtiDB(connection_string)
         lti_db.add_key_secret(key, secret)
         return {'get_key': key, key: secret}
@@ -38,13 +36,8 @@ class LTIValidator(RequestValidator):
 
     def validate_timestamp_and_nonce(self, client_key, timestamp, nonce,
                                      request, request_token=None, access_token=None):
-        # unpw = ''
-        # with open('/srv/jupyterhub/mysql') as f:
-        #     unpw = f.read().strip()
-        #
-        # connection_string = 'mysql+mysqlconnector://%s@%s/lti' % (unpw, os.environ['MYSQL_HOST'])
-        # db = NoncesDB(connection_string)
-        db = NoncesDB('sqlite:///timestamp.db')
+
+        db = NoncesDB(os.environ.get('NONCES_DB', 'sqlite:///timestamp.db'))
 
         valid_nonce = db.check_valid_timestamp_and_nonce(timestamp, nonce)
         if not valid_nonce:
