@@ -136,8 +136,11 @@ class LTIAuthenticator(OAuthenticator):
             firstname = handler.get_argument('lis_person_name_given', '')
             surname = handler.get_argument('lis_person_name_family', '')
             user = db.get_user(handler.get_argument("user_id"))
+            
             if not user:
                 db.add_user(handler.get_argument('user_id'))
+            print('About to add %r to nbgrader' % user)            
+            db.add_to_nbgrader(user, firstname, surname)
             return user
 
         return None

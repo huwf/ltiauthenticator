@@ -187,7 +187,9 @@ class LtiDB(LoggingConfigurable):
         :param surname: The new student's surname
         :param email: The new student's email address (if applicable)
         :return:
-        """
-        gb = api.Gradebook(os.environ['GRADEBOOK_DB'])
+        """       
+        db_url = os.environ.get('GRADEBOOK_DB', 'sqlite:///gradebook.db')
+        print('Calling add_to_nbgrader with GRADEBOOK_DB as: %s' % db_url)
+        gb = api.Gradebook(db_url)
         return gb.add_student(unix_name, first_name=firstname, last_name=surname, email=email)
 
