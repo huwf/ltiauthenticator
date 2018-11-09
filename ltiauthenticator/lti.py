@@ -41,7 +41,7 @@ class LTILoginHandler(BaseHandler):
         if username:
             db = LtiDB(connection_string)
             params = self._get_lti_params()
-            self.log.debug('params', str(params))
+            self.log.debug('params %s' % str(params))
             db.add_or_update_user_session(
                 key=params['oauth_consumer_key'],
                 user_id=params['user_id'],
@@ -131,8 +131,8 @@ class LTIAuthenticator(OAuthenticator):
             upper_r = role.upper()
             self.log.debug('upper_r: %s', upper_r)
             allow_admin = 'TeachingAssistant'.upper() in upper_r or 'Instructor'.upper() in upper_r or 'ContentDeveloper'.upper() in upper_r
-            if allow_admin and handler.get_argument('custom_admin', ''):
-                return 'instructor'
+#            if allow_admin and handler.get_argument('custom_admin', ''):
+#                return 'instructor'
             firstname = handler.get_argument('lis_person_name_given', '')
             surname = handler.get_argument('lis_person_name_family', '')
             user = db.get_user(handler.get_argument("user_id"))
