@@ -11,6 +11,7 @@ from sqlalchemy import select, func, exists, case, literal_column
 from traitlets.config import LoggingConfigurable
 import os
 from nbgrader import api
+from nbgrader.api import InvalidEntry
 
 # Things for the timestamp and nonce validation
 Base = declarative_base()
