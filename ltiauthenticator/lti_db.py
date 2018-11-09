@@ -165,7 +165,7 @@ class LtiDB(LoggingConfigurable):
         """
         total_users = len(self.db.query(LtiUser).all())
         username = 'user-%d' % (total_users + 1)
-        print('Adding new user %s' % username)
+        self.log.info('Adding new user %s' % username)
         # self.add_user(user_id, username, firstname, surname)
 
         self.db.add(LtiUser(user_id=user_id, unix_name=username))
@@ -190,7 +190,7 @@ class LtiDB(LoggingConfigurable):
         :return:
         """       
         db_url = os.environ.get('GRADEBOOK_DB', 'sqlite:///gradebook.db')
-        print('Calling add_to_nbgrader with GRADEBOOK_DB as: %s' % db_url)
+        self.log.info('Calling add_to_nbgrader with GRADEBOOK_DB as: %s' % db_url)
         gb = api.Gradebook(db_url)
         return gb.add_student(unix_name, first_name=firstname, last_name=surname, email=email)
 
