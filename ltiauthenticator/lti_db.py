@@ -175,6 +175,7 @@ class LtiDB(LoggingConfigurable):
         try:
             self.db.commit()
             self.log.info('Added new user %s to the database' % username)
+            return username
         except (IntegrityError, FlushError) as e:
             self.db.rollback()
             raise ValueError(*e.args)
