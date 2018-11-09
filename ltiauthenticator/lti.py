@@ -141,7 +141,7 @@ class LTIAuthenticator(OAuthenticator):
             if not user:
                 user = db.add_user(handler.get_argument('user_id'))
             self.log.info('About to add %r to nbgrader\n\n\n\n' % user)            
-            db.add_to_nbgrader(user, firstname, surname)
+            db.add_to_nbgrader(user, firstname, surname, '')
             return user
 
         return None
