@@ -150,6 +150,7 @@ class LTIAuthenticator(OAuthenticator):
         return [
             (r'/hub/login', self.login_handler),
             (r"/login", self.login_handler),
+            (r"/hub/oauth_login", self.login_handler)
         ]
 
 class LocalLTIAuthenticator(LocalAuthenticator, LTIAuthenticator):
