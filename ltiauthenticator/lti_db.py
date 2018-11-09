@@ -192,5 +192,10 @@ class LtiDB(LoggingConfigurable):
         db_url = os.environ.get('GRADEBOOK_DB', 'sqlite:///gradebook.db')
         self.log.info('Calling add_to_nbgrader with GRADEBOOK_DB as: %s' % db_url)
         gb = api.Gradebook(db_url)
-        return gb.add_student(unix_name, first_name=firstname, last_name=surname, email=email)
+        try:
+            student = gb.add_student(unix_name, first_name=firstname, last_name=surname, email=email)
+            return student
+        except InvalidEntry as e:
+            # We don't care
+            self.log.info('Not adding student %r to database' % (unix_name))
 
