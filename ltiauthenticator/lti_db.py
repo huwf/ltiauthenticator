@@ -1,3 +1,6 @@
+from pprint import pprint
+from subprocess import Popen, PIPE
+
 from oauthlib.oauth1 import RequestValidator
 from sqlalchemy import (create_engine, ForeignKey, Column, String, Text,
     DateTime, Interval, Float, Enum, UniqueConstraint, Boolean, Integer)
@@ -11,21 +14,35 @@ from sqlalchemy import select, func, exists, case, literal_column
 from traitlets.config import LoggingConfigurable
 import os
 from nbgrader import api
-from nbgrader.api import InvalidEntry
+from nbgrader.api import InvalidEntry, Gradebook, Student
+from nbgrader.auth import Authenticator
+from ltiauthenticator.nbgrader import SubAuthPlugin, SubAuthenticator
+from traitlets.config import Config
 
+nbgrader_db = os.environ.get('GRADEBOOK_DB', 'sqlite:////home/instructor/gradebook.db')
 # Things for the timestamp and nonce validation
 Base = declarative_base()
 
+
 class LtiUser(Base):
     """
-    This converts the Canvas ID into something more readable and is a valid Linux name
+    This maps the Canvas ID into something more readable and is a valid Linux name
+    The `course` variable is to pass to the spawner to set an env if desired.
     """
     __tablename__ = 'usermap'
     user_id = Column(String, primary_key=True)
     unix_name = Column(String)
+    courses = relationship('LtiUserCourse')
 
     def __repr__(self):
-        return 'User(<user_id: %s unix_name: %s>)' % (self.user_id, self.unix_name)
+        return 'User(<user_id: %s unix_name: %s courses: "%s">)' % (self.user_id, self.unix_name, str(self.courses))
+
+
+class LtiUserCourse(Base):
+    __tablename__ = 'user_course'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String, ForeignKey('usermap.user_id'))
+    course = Column(String)
 
 
 class LtiUserSession(Base):
@@ -53,6 +70,7 @@ class LtiKeySecret(Base):
     def __repr__(self):
         return '<KeySecret object %d>' % self.key_secret_id
 
+
 class LtiDB(LoggingConfigurable):
 
     def __init__(self, db_url):
@@ -65,7 +83,7 @@ class LtiDB(LoggingConfigurable):
 
         """
         # create the connection to the database
-        engine = create_engine(db_url, echo=True)
+        engine = create_engine(db_url)
         self.db = scoped_session(sessionmaker(autoflush=True, bind=engine))
 
         # this creates all the tables in the database if they don't already exist
@@ -87,7 +105,6 @@ class LtiDB(LoggingConfigurable):
         except:
             self.log.warn('There is no key/secret pair in the database.  Returning None')
             return None
-
 
     def add_key_secret(self, key, secret):
         if not(self.get_key_secret()):
@@ -152,7 +169,7 @@ class LtiDB(LoggingConfigurable):
             user_obj = self.db.query(LtiUser).filter(LtiUser.user_id == user_id).one()
         # if user_obj:
             print('User already exists, getting user %s' % user_obj.unix_name)
-            return user_obj.unix_name
+            return user_obj
         except NoResultFound:
             return None
 
@@ -168,35 +185,12 @@ class LtiDB(LoggingConfigurable):
         username = 'user-%d' % (total_users + 1)
         self.log.info('Adding new user %s' % username)
         # self.add_user(user_id, username, firstname, surname)
-
-        self.db.add(LtiUser(user_id=user_id, unix_name=username))
-        # with open('/home/instructor/students.csv', 'a') as f:
-        #     print("About to write: %s,%s,%s" % (username, firstname, surname))
-        #     f.write('%s,%s,%s\n' % (username, firstname, surname))
+        user = LtiUser(user_id=user_id, unix_name=username)
+        self.db.add(user)
         try:
             self.db.commit()
             self.log.info('Added new user %s to the database' % username)
-            return username
+            return user
         except (IntegrityError, FlushError) as e:
             self.db.rollback()
             raise ValueError(*e.args)
-
-    def add_to_nbgrader(self, unix_name, firstname, surname, email):
-        """
-        This function adds the user authenticated by LTI and adds to the student database
-        :param unix_name: The new student's unix name
-        :param firstname: The new student's first name
-        :param surname: The new student's surname
-        :param email: The new student's email address (if applicable)
-        :return:
-        """       
-        db_url = os.environ.get('GRADEBOOK_DB', 'sqlite:///gradebook.db')
-        self.log.info('Calling add_to_nbgrader with GRADEBOOK_DB as: %s' % db_url)
-        gb = api.Gradebook(db_url)
-        try:
-            student = gb.add_student(unix_name, first_name=firstname, last_name=surname, email=email)
-            return student
-        except InvalidEntry as e:
-            # We don't care
-            self.log.info('Not adding student %r to database' % (unix_name))
-
